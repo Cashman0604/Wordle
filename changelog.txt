@@ -1,0 +1,6 @@
+Wordle Suite Update v1.1
+	Bugfixes
+		- fixed bug that caused the play function to be unplayable
+		- fixed bug in the solve function that occured when a guess
+		  had the same letter labeled both yellow and grey, causing
+		  the letter to be eliminated when it shouldn't be
