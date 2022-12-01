@@ -70,7 +70,7 @@ public class Solver {
 	 */
 	private void elim() throws Exception {
 		Word temp; // hold current word properties
-		Scanner i = new Scanner(new File("files\\wordleList.txt"));
+		Scanner i = new Scanner(new File("Version 1.1\\files\\wordleList.txt"));
 		// parses through entire dictionary
 		while (i.hasNext()) {
 			temp = new Word(i.nextLine());

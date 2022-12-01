@@ -74,7 +74,7 @@ class Wordle {
 	 * @throws Exception
 	 */
 	public void addWords() throws Exception {
-		Scanner file = new Scanner(new File("files\\wordleList.txt"));
+		Scanner file = new Scanner(new File("Version 1.1\\files\\wordleList.txt"));
 		// add all the Word objects in file
 		while (file.hasNext()) {
 			Word t = new Word(file.nextLine());
