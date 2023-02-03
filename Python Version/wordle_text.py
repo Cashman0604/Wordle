@@ -1,8 +1,7 @@
-# Name:
-# UTEID:
-# replace <NAME> with your name and delete this line.
+# Name: Cash Belknap
+# UTEID: ctb2559
 #
-# On my honor, <NAME>, this programming assignment is my own work
+# On my honor, <Cash Belknap>, this programming assignment is my own work
 # and I have not provided this code to any other student.
 
 import random
@@ -68,6 +67,51 @@ def get_words():
             all_words.add(line.strip().upper())
     return secret_words, all_words
 
+
+def get_secret_word(secret_words):
+    """ Return a random word from the list of secret words.
+    """
+    return random.choice(secret_words)
+
+
+def check_valid_word(guess, all_words):
+    """ Check if the guess is a valid word.
+        Return True if the word is valid, False otherwise.
+    """
+    if len(guess) != 5:
+        return False
+    for letter in guess:
+        if letter not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz':
+            return False
+    if guess in all_words:
+        return True
+    return False
+
+
+def compare_guess(guess, secret_word):
+    """ Return a string that gives feedback on the guess.
+        The string will be 5 characters long.
+        Each character will be G, O, or -.
+        G indicates the letter is in the word and in the correct spot.
+        O indicates the letter is in the word but not that spot.
+        - indicates the letter is not in the word.
+    """
+    feedback = ''
+    for letter in guess:
+        if letter in secret_word:
+            if letter == secret_word[guess.index(letter)]:
+                feedback += 'G'
+            else:
+                # TODO - implement checking for multiples of same letter
+                feedback += 'O'
+                i = 0
+                for let in guess:
+                    if let == letter:
+                        i += 1
+                # if i > 1:
+        else:
+            feedback += '-'
+    return feedback
 
 if __name__ == '__main__':
     main()
