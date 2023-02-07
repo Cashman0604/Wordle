@@ -18,6 +18,7 @@ def main():
         3. Get the random seed from the player if they want one.
         4. Play rounds until the player wants to quit.
     """
+    
     secret_words, all_words = get_words()
     welcome_and_instructions()
     continue_playing = True
@@ -27,9 +28,15 @@ def main():
         global alphabet
         alphabet = make_alphabet()
         output = ''
-        while guesses > 0:
-            play_round(secret_word, all_words, output)
+        feedback = ''
+        while guesses > 0 and feedback != 'GGGGG':
+            one_output, feedback = play_round(all_words, secret_word, output)
+            output += one_output
+            print(output)
             guesses -= 1
+        if feedback == 'GGGGG':
+            print('You win. Great!')
+        continue_playing = input('\nDo you want to play again? Type Y for yes: ').upper() == 'Y'
 
 
 def play_round(all_words, secret_word, output):
@@ -48,7 +55,7 @@ def play_round(all_words, secret_word, output):
             print(guess + ' is not a valid word. Please try again.')
     feedback = compare_guess(guess, secret_word)
     output += feedback + '\n' + guess + '\n'
-    print(output)
+    return output, feedback
 
 def welcome_and_instructions():
     """
@@ -83,14 +90,14 @@ def get_words():
         combined with other words that are valid user guesses.
     """
     temp_secret_words = []
-    with open('secret_words.txt', 'r') as data_file:
+    with open('Python Version\secret_words.txt', 'r') as data_file:
         all_lines = data_file.readlines()
         for line in all_lines:
             temp_secret_words.append(line.strip().upper())
     temp_secret_words.sort()
     secret_words = tuple(temp_secret_words)
     all_words = set(secret_words)
-    with open('other_valid_words.txt', 'r') as data_file:
+    with open('Python Version\other_valid_words.txt', 'r') as data_file:
         all_lines = data_file.readlines()
         for line in all_lines:
             all_words.add(line.strip().upper())
@@ -101,85 +108,6 @@ def get_secret_word(secret_words):
     """ Return a random word from the list of secret words.
     """
     return random.choice(secret_words)
-
-
-def make_alphabet():
-    """ Return a tuple of all the letters in the alphabet.
-        Each element belongs to the Letter class.
-    """
-    alphabet = {}
-    possible = [True, True, True, True, True]
-    green = [False, False, False, False, False]
-    for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
-        alphabet.update({letter: Letter(letter, possible, green, 0)})
-    return alphabet
-
-
-def check_valid_word(guess, all_words):
-    """ Check if the guess is a valid word.
-        Return True if the word is valid, False otherwise.
-    """
-    if len(guess) != 5:
-        return False
-    for letter in guess:
-        if letter not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz':
-            return False
-    if guess in all_words:
-        return True
-    return False
-
-
-def compare_guess(guess, secret_word):
-    """ Return a string that gives feedback on the guess.
-        The string will be 5 characters long.
-        Each character will be G, O, or -.
-        G indicates the letter is in the word and in the correct spot.
-        O indicates the letter is in the word but not that spot.
-        - indicates the letter is not in the word.
-    """
-    feedback = ''
-    for letter in guess:
-        check_letter(letter, guess.index(letter), secret_word)
-        if alphabet[letter].condition == 3:
-            if alphabet[letter].green_spaces[guess.index(letter)]:
-                feedback += 'G'
-            elif alphabet[letter].possible_spots[guess.index(letter)]:
-                feedback += 'O'
-            else:
-                feedback += '-'
-        elif alphabet[letter].condition == 2:
-            feedback += 'O'
-        else:
-            feedback += '-'
-    return feedback
-
-
-def check_letter(let, index, secret_word):
-    if let in secret_word:
-        if let == secret_word[index]:
-            alphabet[let].condition = 3
-            alphabet[let].set_possible_spot(index, True)
-            alphabet[let].set_green_space(index)
-            i = 0
-            for green in alphabet[let].green_spaces:
-                if green:
-                    i += 1
-            j = 0
-            for letter in secret_word:
-                if letter == let:
-                    j += 1
-            if i == j:
-                alphabet[let].possible_spots = alphabet[let].green_spaces
-        else:
-            alphabet[let].condition = 2
-            alphabet[let].set_possible_spot(index, False)
-    else:
-        alphabet[let].condition = 1
-        alphabet[let].possible_spots = [False, False, False, False, False]
-
-
-if __name__ == '__main__':
-    main()
 
 
 class Letter:
@@ -232,3 +160,83 @@ class Letter:
 
     def set_condition(self, x):
         self.condition = x
+
+
+def make_alphabet():
+    """ Return a tuple of all the letters in the alphabet.
+        Each element belongs to the Letter class.
+    """
+    alphabet = {}
+    possible = [True, True, True, True, True]
+    green = [False, False, False, False, False]
+    for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+        let_obj = Letter(letter, possible, green, 0)
+        alphabet.update({letter: let_obj})
+    return alphabet
+
+
+def check_valid_word(guess, all_words):
+    """ Check if the guess is a valid word.
+        Return True if the word is valid, False otherwise.
+    """
+    if len(guess) != 5:
+        return False
+    for letter in guess:
+        if letter not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz':
+            return False
+    if guess in all_words:
+        return True
+    return False
+
+
+def compare_guess(guess, secret_word):
+    """ Return a string that gives feedback on the guess.
+        The string will be 5 characters long.
+        Each character will be G, O, or -.
+        G indicates the letter is in the word and in the correct spot.
+        O indicates the letter is in the word but not that spot.
+        - indicates the letter is not in the word.
+    """
+    feedback = ''
+    for letter in guess:
+        check_letter(letter, guess.index(letter), secret_word)
+        if alphabet.get(letter).condition == 3:
+            if alphabet.get(letter).green_spaces[guess.index(letter)]:
+                feedback += 'G'
+            elif alphabet.get(letter).possible_spots[guess.index(letter)]:
+                feedback += 'O'
+            else:
+                feedback += '-'
+        elif alphabet.get(letter).condition == 2:
+            feedback += 'O'
+        else:
+            feedback += '-'
+    return feedback
+
+
+def check_letter(let, index, secret_word):
+    if let in secret_word:
+        if let == secret_word[index]:
+            alphabet.get(let).condition = 3
+            alphabet.get(let).set_possible_spot(index, True)
+            alphabet.get(let).set_green_space(index)
+            i = 0
+            for green in alphabet.get(let).green_spaces:
+                if green:
+                    i += 1
+            j = 0
+            for letter in secret_word:
+                if letter == let:
+                    j += 1
+            if i == j:
+                alphabet.get(let).possible_spots = alphabet.get(let).green_spaces
+        else:
+            alphabet.get(let).condition = 2
+            alphabet.get(let).set_possible_spot(index, False)
+    else:
+        alphabet.get(let).condition = 1
+        alphabet.get(let).possible_spots = [False, False, False, False, False]
+
+
+if __name__ == '__main__':
+    main()
