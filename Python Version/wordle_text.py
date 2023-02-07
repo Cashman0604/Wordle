@@ -6,6 +6,8 @@
 
 import random
 
+alphabet = {}
+
 
 def main():
     """ Plays a text based version of Wordle.
@@ -18,8 +20,35 @@ def main():
     """
     secret_words, all_words = get_words()
     welcome_and_instructions()
+    continue_playing = True
+    while continue_playing:
+        guesses = 6
+        secret_word = get_secret_word(secret_words)
+        global alphabet
+        alphabet = make_alphabet()
+        output = ''
+        while guesses > 0:
+            play_round(secret_word, all_words, output)
+            guesses -= 1
 
 
+def play_round(all_words, secret_word, output):
+    """ Play one round of Wordle.
+        1. Get the secret word.
+        2. Initialize the alphabet.
+        3. Play the round.
+        4. Print the results of the round.
+    """
+    invalid_guess = True
+    while invalid_guess:
+        guess = input('\nEnter your guess. A 5 letter word: ').upper()
+        if check_valid_word(guess, all_words):
+            invalid_guess = False
+        else:
+            print(guess + ' is not a valid word. Please try again.')
+    feedback = compare_guess(guess, secret_word)
+    output += feedback + '\n' + guess + '\n'
+    print(output)
 
 def welcome_and_instructions():
     """
@@ -74,6 +103,18 @@ def get_secret_word(secret_words):
     return random.choice(secret_words)
 
 
+def make_alphabet():
+    """ Return a tuple of all the letters in the alphabet.
+        Each element belongs to the Letter class.
+    """
+    alphabet = {}
+    possible = [True, True, True, True, True]
+    green = [False, False, False, False, False]
+    for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+        alphabet.update({letter: Letter(letter, possible, green, 0)})
+    return alphabet
+
+
 def check_valid_word(guess, all_words):
     """ Check if the guess is a valid word.
         Return True if the word is valid, False otherwise.
@@ -98,20 +139,96 @@ def compare_guess(guess, secret_word):
     """
     feedback = ''
     for letter in guess:
-        if letter in secret_word:
-            if letter == secret_word[guess.index(letter)]:
+        check_letter(letter, guess.index(letter), secret_word)
+        if alphabet[letter].condition == 3:
+            if alphabet[letter].green_spaces[guess.index(letter)]:
                 feedback += 'G'
-            else:
-                # TODO - implement checking for multiples of same letter
+            elif alphabet[letter].possible_spots[guess.index(letter)]:
                 feedback += 'O'
-                i = 0
-                for let in guess:
-                    if let == letter:
-                        i += 1
-                # if i > 1:
+            else:
+                feedback += '-'
+        elif alphabet[letter].condition == 2:
+            feedback += 'O'
         else:
             feedback += '-'
     return feedback
 
+
+def check_letter(let, index, secret_word):
+    if let in secret_word:
+        if let == secret_word[index]:
+            alphabet[let].condition = 3
+            alphabet[let].set_possible_spot(index, True)
+            alphabet[let].set_green_space(index)
+            i = 0
+            for green in alphabet[let].green_spaces:
+                if green:
+                    i += 1
+            j = 0
+            for letter in secret_word:
+                if letter == let:
+                    j += 1
+            if i == j:
+                alphabet[let].possible_spots = alphabet[let].green_spaces
+        else:
+            alphabet[let].condition = 2
+            alphabet[let].set_possible_spot(index, False)
+    else:
+        alphabet[let].condition = 1
+        alphabet[let].possible_spots = [False, False, False, False, False]
+
+
 if __name__ == '__main__':
     main()
+
+
+class Letter:
+    letter = ''
+    possible_spots = []
+    green_spaces = []
+    # condition of the letter 
+    # (0 = not used, 1 = eliminated, 2 = used, 3 = used and green)
+    condition = 0 
+
+    def __init__(self, letter, possible_spots, green_spaces, condition):
+        self.letter = letter
+        self.possible_spots = possible_spots
+        self.green_spaces = green_spaces
+        self.condition = condition
+    
+
+    # getters and setters
+    def get_letter(self):
+        return self.letter
+    
+
+    def get_possible_spots(self):
+        return self.possible_spots
+    
+
+    def valid_spot(self, x):
+        return self.possible_spots[x]
+    
+
+    def set_possible_spot(self, x, bool):
+        self.possible_spots[x] = bool
+    
+
+    def get_green_spaces(self):
+        return self.green_spaces
+    
+
+    def get_one_green_space(self, x):
+        return self.green_spaces[x]
+    
+
+    def set_green_space(self, x):
+        self.green_spaces[x] = True
+    
+
+    def get_condition(self):
+        return self.condition
+    
+
+    def set_condition(self, x):
+        self.condition = x
