@@ -30,16 +30,17 @@ def main():
         output = ''
         feedback = ''
         while guesses > 0 and feedback != 'GGGGG':
-            one_output, feedback = play_round(all_words, secret_word, output)
+            one_output, feedback = play_round(all_words, secret_word)
             output += one_output
             print(output)
             guesses -= 1
+            print('Unused letters: ' + unused_letters() + '\n')
         if feedback == 'GGGGG':
-            print('You win. Great!')
-        continue_playing = input('\nDo you want to play again? Type Y for yes: ').upper() == 'Y'
+            print('You win. Great!\n')
+        continue_playing = input('Do you want to play again? Type Y for yes: ').upper() == 'Y'
 
 
-def play_round(all_words, secret_word, output):
+def play_round(all_words, secret_word):
     """ Play one round of Wordle.
         1. Get the secret word.
         2. Initialize the alphabet.
@@ -54,8 +55,19 @@ def play_round(all_words, secret_word, output):
         else:
             print(guess + ' is not a valid word. Please try again.')
     feedback = compare_guess(guess, secret_word)
-    output += feedback + '\n' + guess + '\n'
+    output = feedback + '\n' + guess + '\n'
     return output, feedback
+
+
+def unused_letters():
+    """ Return a string with all the letters that have not been used.
+    """
+    unused = ''
+    for letter in alphabet:
+        if alphabet.get(letter).condition == 0:
+            unused += letter + ' '
+    return unused
+
 
 def welcome_and_instructions():
     """
